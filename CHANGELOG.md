@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/shshinyo/github-actions/compare/v1.3.0...v1.3.1) (2026-04-24)
+
+
+### Bug Fixes
+
+* remove redundant numbering and improve step badge layout ([c627e04](https://github.com/shshinyo/github-actions/commit/c627e046a2072092d0cd814fb2465e8ffc8c43a0))
+
 ## [1.3.0](https://github.com/shshinyo/github-actions/compare/v1.2.0...v1.3.0) (2026-04-24)
 
 
