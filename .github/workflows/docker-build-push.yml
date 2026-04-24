@@ -14,6 +14,9 @@ on:
     tags: ['v*.*.*']           # semantic version tags
   pull_request:
     branches: [main]           # build only (no push) on PRs
+  workflow_dispatch:           # allow manual trigger
+  repository_dispatch:         # allow triggering from other workflows
+    types: [new-release, manual-build]
 
 env:
   REGISTRY_GHCR: ghcr.io
