@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import SlideTitle from './slides/SlideTitle'
 import SlideAutomation from './slides/SlideAutomation'
 import SlideDocker from './slides/SlideDocker'
+import SlideYAMLGuide from './slides/SlideYAMLGuide'
 import SlideOverview from './slides/SlideOverview'
 import SlidePipeline from './slides/SlidePipeline'
 import SlidePostDeploy from './slides/SlidePostDeploy'
@@ -18,6 +19,7 @@ const SLIDES = [
   { id: 'title',         component: SlideTitle,         label: 'Intro' },
   { id: 'automation',    component: SlideAutomation,    label: 'Automation' },
   { id: 'docker',        component: SlideDocker,        label: 'Docker' },
+  { id: 'yaml-guide',    component: SlideYAMLGuide,     label: 'YAML Guide' },
   { id: 'overview',      component: SlideOverview,      label: 'Architecture' },
   { id: 'pipeline',      component: SlidePipeline,      label: 'Pipeline' },
   { id: 'postdeploy',    component: SlidePostDeploy,    label: 'Post-Deploy' },
