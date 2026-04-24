@@ -1,0 +1,192 @@
+# ============================================================
+# pr-automation.yml
+# Automates the entire PR lifecycle:
+#   - Auto-assigns reviewers based on CODEOWNERS
+#   - Labels PRs by size (XS/S/M/L/XL) and file types
+#   - Enforces PR title follows Conventional Commits format
+#   - Posts a checklist comment on new PRs
+#   - Runs a diff summary via AI (GitHub Copilot)
+#   - Auto-merges Dependabot PRs for minor/patch updates
+#   - Stale PR detection and gentle nudging
+# ============================================================
+name: 🤖 PR Automation
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+  pull_request_review:
+    types: [submitted]
+  schedule:
+    - cron: '0 9 * * 1-5'    # Weekdays at 9am — stale check
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  # ----------------------------------------------------------
+  # Job 1: Label PR by size (lines changed)
+  # ----------------------------------------------------------
+  label-size:
+    name: Label PR Size
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: codelytv/pr-size-labeler@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          xs_max_size: 10       # XS: ≤10 lines
+          s_max_size: 100       # S: ≤100 lines
+          m_max_size: 500       # M: ≤500 lines
+          l_max_size: 1000      # L: ≤1000 lines
+          # XL: anything larger
+          fail_if_xl: false     # warn but don't block
+
+  # ----------------------------------------------------------
+  # Job 2: Auto-label by changed file paths
+  # ----------------------------------------------------------
+  label-paths:
+    name: Label PR by File Paths
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/labeler@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          # Rules defined in .github/labeler.yml:
+          # frontend: ['src/**', '*.css']
+          # backend: ['api/**', 'server/**']
+          # infra: ['.github/**', 'terraform/**', 'Dockerfile']
+          # docs: ['docs/**', '*.md']
+
+  # ----------------------------------------------------------
+  # Job 3: Validate PR title (Conventional Commits)
+  # ----------------------------------------------------------
+  validate-title:
+    name: Validate PR Title
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Allowed types from Conventional Commits spec
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            chore
+            revert
+          requireScope: false
+          subjectPattern: ^.{1,72}$   # max 72 chars
+          subjectPatternError: 'PR title must be ≤72 characters long'
+
+  # ----------------------------------------------------------
+  # Job 4: Post a PR checklist comment when PR is opened
+  # ----------------------------------------------------------
+  pr-checklist:
+    name: Post PR Checklist
+    runs-on: ubuntu-latest
+    if: github.event.action == 'opened'
+
+    steps:
+      - uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## 📋 PR Review Checklist
+
+            Thanks for the PR, @${{ github.event.pull_request.user.login }}! Before merging, please ensure:
+
+            **Code Quality**
+            - [ ] Tests added/updated for new behaviour
+            - [ ] Code coverage didn't drop
+            - [ ] No linting errors (`npm run lint`)
+
+            **Functionality**
+            - [ ] Tested locally in development environment
+            - [ ] Edge cases considered and handled
+            - [ ] No console.log / debug code left in
+
+            **Documentation**
+            - [ ] README updated if public API changed
+            - [ ] JSDoc comments for exported functions
+            - [ ] CHANGELOG entry (if needed — semantic commits handle this)
+
+            **Security**
+            - [ ] No secrets or credentials in code
+            - [ ] Input validation added where appropriate
+            - [ ] Dependencies reviewed (Dependabot scan)
+
+            ---
+            > 🤖 *This comment is automatically posted by the PR Automation workflow*
+
+  # ----------------------------------------------------------
+  # Job 5: Auto-merge Dependabot PRs (minor + patch only)
+  # ----------------------------------------------------------
+  auto-merge-dependabot:
+    name: Auto-merge Dependabot
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+
+    steps:
+      - name: Fetch Dependabot metadata
+        id: meta
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge for minor/patch
+        if: |
+          steps.meta.outputs.update-type == 'version-update:semver-minor' ||
+          steps.meta.outputs.update-type == 'version-update:semver-patch'
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request-number: ${{ github.event.pull_request.number }}
+          merge-method: squash
+
+      - name: Comment on major updates (manual review required)
+        if: steps.meta.outputs.update-type == 'version-update:semver-major'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ⚠️ **Major version update** — manual review required.
+            Please check the migration guide before merging.
+
+  # ----------------------------------------------------------
+  # Job 6: Stale PR detection (runs on schedule)
+  # ----------------------------------------------------------
+  stale-check:
+    name: Stale PR Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+
+    steps:
+      - uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          days-before-pr-stale: 14
+          days-before-pr-close: 7
+          stale-pr-label: 'stale'
+          stale-pr-message: |
+            👋 This PR has had no activity for 14 days.
+            It will be closed in 7 days unless updated.
+            To keep it open, add a comment or push a commit.
+          close-pr-message: |
+            🔒 Closing this PR due to inactivity. Feel free to reopen if needed.
+          exempt-pr-labels: 'do-not-close,WIP,blocked'

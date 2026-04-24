@@ -1,0 +1,178 @@
+# ============================================================
+# security-scan.yml
+# Comprehensive security scanning pipeline:
+#   - CodeQL static analysis (SAST) for JS/TS/Python
+#   - Dependency review (blocks PRs with new CVEs)
+#   - Gitleaks — prevent secret commits
+#   - Trivy — IaC misconfiguration scanning
+#   - OWASP ZAP — DAST (dynamic API scanning)
+#   - Upload all results to GitHub Security tab (SARIF)
+# ============================================================
+name: 🛡️ Security Scanning
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: '0 2 * * 1'    # Weekly deep scan every Monday at 2am
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: write
+  security-events: write   # upload SARIF to Security tab
+
+jobs:
+  # ----------------------------------------------------------
+  # Job 1: CodeQL — Static Analysis (SAST)
+  # Detects SQL injection, XSS, path traversal, etc.
+  # ----------------------------------------------------------
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript-typescript, python]  # add java, go, etc.
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: |
+            security-extended    # OWASP Top 10 + extras
+            security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:${{ matrix.language }}'
+          upload: Always    # always upload, even on failure
+
+  # ----------------------------------------------------------
+  # Job 2: Dependency Review — block PRs with new CVEs
+  # ----------------------------------------------------------
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high         # block HIGH + CRITICAL
+          allow-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC
+          deny-licenses: GPL-2.0, GPL-3.0, AGPL-3.0   # copyleft — check with legal
+
+  # ----------------------------------------------------------
+  # Job 3: Gitleaks — prevent secrets from being committed
+  # ----------------------------------------------------------
+  secret-scan:
+    name: Secret Scanning (Gitleaks)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0     # full history scan
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}  # required for org use
+        with:
+          args: |
+            --config .gitleaks.toml
+            --report-format sarif
+            --report-path gitleaks.sarif
+
+      - name: Upload Gitleaks SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: gitleaks.sarif
+
+  # ----------------------------------------------------------
+  # Job 4: Trivy — IaC, Dockerfile, and filesystem scanning
+  # ----------------------------------------------------------
+  trivy-scan:
+    name: Trivy IaC & FS Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Scan the repo filesystem (deps + IaC misconfigs)
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: 'vuln,secret,misconfig'
+          format: sarif
+          output: trivy-fs.sarif
+          severity: 'HIGH,CRITICAL'
+          ignore-unfixed: true     # reduce noise from unfixable issues
+
+      - name: Upload Trivy FS SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-fs.sarif
+          category: trivy-filesystem
+
+      # Scan Terraform/CloudFormation for misconfigurations
+      - name: Trivy IaC scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: config
+          scan-ref: terraform/
+          format: sarif
+          output: trivy-iac.sarif
+          exit-code: '0'    # warn only on IaC
+
+      - name: Upload Trivy IaC SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-iac.sarif
+          category: trivy-iac
+
+  # ----------------------------------------------------------
+  # Job 5: OWASP ZAP — DAST against staging API
+  # Only runs on main branch (staging must be deployed first)
+  # ----------------------------------------------------------
+  dast-zap:
+    name: DAST — OWASP ZAP
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run ZAP API Scan
+        uses: zaproxy/action-api-scan@v0.7.0
+        with:
+          target: 'https://staging.myapp.com/api/openapi.json'
+          format: openapi
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-I'     # don't fail on alerts (report only)
+
+      - name: Upload ZAP report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: zap-report
+          path: report_json.json

@@ -1,0 +1,236 @@
+# ============================================================
+# scheduled-tasks.yml
+# GitHub Actions as a cron job platform:
+#   - Database backup verification
+#   - Stale issue cleanup
+#   - Weekly dependency audit report
+#   - Performance regression test
+#   - Generate and post weekly team velocity report
+#   - Certificate expiry check
+# This shows Actions is NOT just CI/CD — it's a full
+# developer automation & scheduled job platform.
+# ============================================================
+name: ⏰ Scheduled Developer Tasks
+
+on:
+  schedule:
+    - cron: '0 1 * * *'      # Daily at 1am UTC — DB backup check
+    - cron: '0 8 * * 1'      # Monday 8am — weekly reports
+    - cron: '0 0 1 * *'      # 1st of each month — cert check
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Which task to run manually'
+        type: choice
+        options: [all, stale-issues, weekly-report, cert-check, perf-test]
+        default: all
+
+jobs:
+  # ----------------------------------------------------------
+  # Task 1: Stale issue/PR cleanup (runs daily)
+  # ----------------------------------------------------------
+  stale-issues:
+    name: Stale Issue Cleanup
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'schedule' ||
+      inputs.task == 'all' || inputs.task == 'stale-issues'
+
+    steps:
+      - uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          stale-issue-message: |
+            👋 This issue has had no activity for **60 days**.
+            It will be closed in 14 days unless there is new activity.
+            If still relevant, please comment or link to ongoing work.
+          close-issue-message: |
+            🔒 Closing due to inactivity. Reopen anytime if still needed.
+          days-before-issue-stale: 60
+          days-before-issue-close: 14
+          stale-issue-label: 'stale'
+          exempt-issue-labels: 'pinned,security,roadmap,blocked'
+          # PRs have shorter timeouts
+          days-before-pr-stale: 30
+          days-before-pr-close: 7
+          stale-pr-label: 'stale'
+          stale-pr-message: 'This PR has had no activity for 30 days.'
+
+  # ----------------------------------------------------------
+  # Task 2: Weekly dependency audit + report to Slack
+  # ----------------------------------------------------------
+  dependency-audit:
+    name: Weekly Dependency Audit
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'schedule' && startsWith(github.event.schedule, '0 8')) ||
+      inputs.task == 'all' || inputs.task == 'weekly-report'
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run npm audit
+        id: audit
+        run: |
+          npm audit --json > audit-report.json || true
+          TOTAL=$(jq '.metadata.vulnerabilities | to_entries | map(.value) | add' audit-report.json)
+          HIGH=$(jq '.metadata.vulnerabilities.high' audit-report.json)
+          CRITICAL=$(jq '.metadata.vulnerabilities.critical' audit-report.json)
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+          echo "high=$HIGH" >> $GITHUB_OUTPUT
+          echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-report-${{ github.run_id }}
+          path: audit-report.json
+
+      - name: Post audit summary to Slack
+        uses: slackapi/slack-github-action@v1
+        with:
+          channel-id: 'C0123SECURITY'
+          slack-message: |
+            📦 *Weekly Dependency Audit — ${{ github.repository }}*
+            Total vulnerabilities: *${{ steps.audit.outputs.total }}*
+            High: ${{ steps.audit.outputs.high }} | Critical: ${{ steps.audit.outputs.critical }}
+            <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View full report>
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  # ----------------------------------------------------------
+  # Task 3: TLS Certificate expiry check
+  # ----------------------------------------------------------
+  cert-check:
+    name: Certificate Expiry Check
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'schedule' && startsWith(github.event.schedule, '0 0 1')) ||
+      inputs.task == 'all' || inputs.task == 'cert-check'
+
+    strategy:
+      matrix:
+        domain:
+          - myapp.com
+          - api.myapp.com
+          - admin.myapp.com
+
+    steps:
+      - name: Check certificate for ${{ matrix.domain }}
+        id: cert
+        run: |
+          EXPIRY=$(echo | openssl s_client -connect ${{ matrix.domain }}:443 -servername ${{ matrix.domain }} 2>/dev/null \
+            | openssl x509 -noout -enddate 2>/dev/null \
+            | cut -d= -f2)
+          EXPIRY_TS=$(date -d "$EXPIRY" +%s)
+          NOW_TS=$(date +%s)
+          DAYS_LEFT=$(( (EXPIRY_TS - NOW_TS) / 86400 ))
+          echo "days=$DAYS_LEFT" >> $GITHUB_OUTPUT
+          echo "domain=${{ matrix.domain }} expires in $DAYS_LEFT days ($EXPIRY)"
+
+      - name: Alert if expiring within 30 days
+        if: ${{ steps.cert.outputs.days < 30 }}
+        uses: slackapi/slack-github-action@v1
+        with:
+          channel-id: 'C0123ALERTS'
+          slack-message: |
+            🔴 *Certificate expiring soon!*
+            Domain: `${{ matrix.domain }}`
+            Expires in: *${{ steps.cert.outputs.days }} days*
+            Action needed: renew certificate NOW.
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  # ----------------------------------------------------------
+  # Task 4: Scheduled performance baseline test
+  # ----------------------------------------------------------
+  perf-baseline:
+    name: Performance Regression Test
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'schedule' && startsWith(github.event.schedule, '0 8')) ||
+      inputs.task == 'all' || inputs.task == 'perf-test'
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install k6
+        run: |
+          curl https://github.com/grafana/k6/releases/download/v0.49.0/k6-v0.49.0-linux-amd64.tar.gz -L | tar xvz
+          sudo mv k6-*/k6 /usr/local/bin/
+
+      - name: Run k6 load test
+        run: |
+          k6 run \
+            --vus 50 \
+            --duration 60s \
+            --out json=results.json \
+            tests/perf/load-test.js
+        env:
+          BASE_URL: https://staging.myapp.com
+
+      - name: Check p99 threshold
+        run: |
+          P99=$(jq '[.[] | select(.metric == "http_req_duration") | .data.value] | sort | .[length * 0.99 | floor]' results.json)
+          echo "p99 latency: ${P99}ms"
+          if (( $(echo "$P99 > 500" | bc -l) )); then
+            echo "::error::p99 latency ${P99}ms exceeds 500ms threshold!"
+            exit 1
+          fi
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: perf-results-${{ github.run_id }}
+          path: results.json
+
+  # ----------------------------------------------------------
+  # Task 5: Auto-generate weekly team report as GitHub Issue
+  # ----------------------------------------------------------
+  weekly-report:
+    name: Weekly Velocity Report
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'schedule' && startsWith(github.event.schedule, '0 8')) ||
+      inputs.task == 'weekly-report'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Collect stats via GitHub CLI
+        id: stats
+        run: |
+          WEEK_START=$(date -d '7 days ago' --iso-8601)
+          PRS_MERGED=$(gh pr list --state merged --search "merged:>=$WEEK_START" --json number --jq 'length')
+          COMMITS=$(git log --since="$WEEK_START" --oneline | wc -l)
+          echo "prs=$PRS_MERGED" >> $GITHUB_OUTPUT
+          echo "commits=$COMMITS" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create weekly report issue
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: "📊 Weekly Velocity Report — $(date '+%Y-%m-%d')"
+          labels: report, automated
+          body: |
+            ## 📊 Weekly Engineering Velocity
+
+            | Metric | Value |
+            |--------|-------|
+            | PRs Merged | ${{ steps.stats.outputs.prs }} |
+            | Commits | ${{ steps.stats.outputs.commits }} |
+            | Period | Last 7 days |
+            | Generated | ${{ github.run_id }} |
+
+            > 🤖 Auto-generated by the Scheduled Tasks workflow

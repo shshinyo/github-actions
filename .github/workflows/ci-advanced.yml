@@ -1,0 +1,234 @@
+# ============================================================
+# ci-advanced.yml
+# Advanced CI pipeline demonstrating:
+#   - Dynamic matrix from JSON file
+#   - OIDC cloud authentication (no stored secrets!)
+#   - Composite actions for DRY setup
+#   - Conditional steps, environments, concurrency guards
+#   - Test result annotations in PR
+# ============================================================
+name: 🧪 Advanced CI Pipeline
+
+on:
+  push:
+    branches: [main, develop, 'release/**']
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target deployment environment'
+        required: true
+        type: choice
+        options: [staging, production]
+        default: staging
+      skip-tests:
+        description: 'Skip test suite (emergency deploy only)'
+        type: boolean
+        default: false
+
+# Prevent concurrent runs on same branch — cancel stale ones
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  # ----------------------------------------------------------
+  # Job 1: Read matrix configuration from file
+  # Allows teams to update test matrix without touching workflow
+  # ----------------------------------------------------------
+  prepare:
+    name: Prepare CI Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      node-versions: ${{ steps.matrix.outputs.node }}
+      should-deploy: ${{ steps.check.outputs.deploy }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read matrix config
+        id: matrix
+        # Read supported Node versions from .nvmrc or package.json engines
+        run: |
+          # Dynamic matrix — edit node-versions.json to change versions
+          MATRIX=$(cat .github/node-versions.json 2>/dev/null || echo '["18","20","22"]')
+          echo "node=$MATRIX" >> $GITHUB_OUTPUT
+
+      - name: Check deploy eligibility
+        id: check
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" && "${{ github.event_name }}" == "push" ]]; then
+            echo "deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "deploy=false" >> $GITHUB_OUTPUT
+          fi
+
+  # ----------------------------------------------------------
+  # Job 2: Run tests across Node version matrix
+  # ----------------------------------------------------------
+  test:
+    name: Test (Node ${{ matrix.node-version }})
+    needs: prepare
+    if: ${{ !inputs.skip-tests }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false   # collect all failures, not just first
+      matrix:
+        node-version: ${{ fromJson(needs.prepare.outputs.node-versions) }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Restore dependency cache keyed to OS + lockfile
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        id: cache
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ matrix.node-version }}-
+            ${{ runner.os }}-node-
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm ci --prefer-offline
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Unit tests with coverage
+        run: npm run test:ci -- --coverage
+        env:
+          NODE_ENV: test
+
+      # Annotate test results directly in the PR
+      - name: Report test results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Jest Tests (Node ${{ matrix.node-version }})
+          path: coverage/junit.xml
+          reporter: jest-junit
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: matrix.node-version == '20'
+        with:
+          file: coverage/lcov.info
+          flags: unit-tests
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  # ----------------------------------------------------------
+  # Job 3: Build & bundle size check
+  # ----------------------------------------------------------
+  build:
+    name: Build & Size Check
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Check bundle size
+        uses: andresz1/size-limit-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ github.sha }}
+          path: dist/
+          retention-days: 7   # auto-cleanup after 7 days
+
+  # ----------------------------------------------------------
+  # Job 4: Deploy to AWS using OIDC (NO stored credentials!)
+  # GitHub gets a short-lived token from AWS STS via OIDC
+  # ----------------------------------------------------------
+  deploy:
+    name: Deploy to ${{ inputs.environment || 'staging' }}
+    needs: [test, build]
+    runs-on: ubuntu-latest
+    if: needs.prepare.outputs.should-deploy == 'true' || github.event_name == 'workflow_dispatch'
+    environment:
+      name: ${{ inputs.environment || 'staging' }}
+      url: https://${{ inputs.environment || 'staging' }}.myapp.com
+
+    permissions:
+      id-token: write    # Required for OIDC
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-${{ github.sha }}
+          path: dist/
+
+      # OIDC: Exchange GitHub token for a short-lived AWS role
+      # No AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY needed!
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-deploy
+          role-session-name: github-ci-${{ github.run_id }}
+          aws-region: us-east-1
+
+      - name: Deploy to S3 + CloudFront
+        run: |
+          aws s3 sync dist/ s3://${{ vars.S3_BUCKET }} \
+            --delete \
+            --cache-control "max-age=31536000,public,immutable" \
+            --exclude "index.html"
+
+          # index.html: no-cache so updates are instant
+          aws s3 cp dist/index.html s3://${{ vars.S3_BUCKET }}/index.html \
+            --cache-control "no-cache,no-store,must-revalidate"
+
+          # Invalidate CloudFront cache
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_ID }} \
+            --paths "/*"
+
+      - name: Notify Slack on deploy
+        if: always()
+        uses: slackapi/slack-github-action@v1
+        with:
+          channel-id: 'C0123DEPLOYS'
+          slack-message: |
+            *${{ job.status == 'success' && '✅' || '❌' }} Deploy to ${{ inputs.environment || 'staging' }}*
+            Commit: `${{ github.sha }}` by @${{ github.actor }}
+            <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

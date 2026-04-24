@@ -1,0 +1,167 @@
+# ============================================================
+# docker-build-push.yml
+# Builds a Docker image and pushes to BOTH:
+#   - GitHub Container Registry (GHCR)
+#   - Docker Hub
+# Features: layer caching, multi-platform (amd64 + arm64),
+#   semantic versioning tags, SBOM attestation
+# ============================================================
+name: 🐳 Docker Build & Push
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*.*.*']           # semantic version tags
+  pull_request:
+    branches: [main]           # build only (no push) on PRs
+
+env:
+  REGISTRY_GHCR: ghcr.io
+  REGISTRY_DOCKERHUB: docker.io
+  IMAGE_NAME: ${{ github.repository }}   # e.g. org/my-app
+
+jobs:
+  # ----------------------------------------------------------
+  # Job 1: Build & push multi-platform image
+  # ----------------------------------------------------------
+  build-and-push:
+    name: Build & Push Image
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write           # push to GHCR
+      id-token: write           # OIDC for signing
+      attestations: write       # SBOM attestation
+
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+      image-tags: ${{ steps.meta.outputs.tags }}
+
+    steps:
+      # 1. Checkout source
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. Setup QEMU – enables cross-compilation for arm64
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64
+
+      # 3. Setup Buildx for multi-platform builds
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 4. Login to GitHub Container Registry (GHCR)
+      - name: Login to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY_GHCR }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}   # auto-generated, no manual secret needed
+
+      # 5. Login to Docker Hub
+      - name: Login to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY_DOCKERHUB }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 6. Generate tags and labels automatically from git context
+      #    Produces tags like:
+      #      main branch  → ghcr.io/org/app:main
+      #      tag v1.2.3   → ghcr.io/org/app:1.2.3, :1.2, :1, :latest
+      #      PR #42       → ghcr.io/org/app:pr-42
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.REGISTRY_GHCR }}/${{ env.IMAGE_NAME }}
+            ${{ env.REGISTRY_DOCKERHUB }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr,prefix=pr-
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha,prefix=sha-,format=short
+
+      # 7. Build and push – with GitHub Actions cache for layers
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Layer caching via GitHub Actions cache backend
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          # Build arguments
+          build-args: |
+            BUILD_DATE=${{ github.event.repository.updated_at }}
+            GIT_SHA=${{ github.sha }}
+            VERSION=${{ steps.meta.outputs.version }}
+
+      # 8. Generate SBOM attestation (supply chain security)
+      - name: Attest image
+        if: github.event_name != 'pull_request'
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ${{ env.REGISTRY_GHCR }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
+
+  # ----------------------------------------------------------
+  # Job 2: Scan the pushed image for CVEs (Trivy)
+  # ----------------------------------------------------------
+  security-scan:
+    name: Security Scan
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+
+    permissions:
+      security-events: write   # upload SARIF to GitHub Security tab
+
+    steps:
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY_GHCR }}/${{ env.IMAGE_NAME }}@${{ needs.build-and-push.outputs.image-digest }}
+          format: sarif
+          output: trivy.sarif
+          exit-code: '1'            # fail if CRITICAL found
+          severity: 'HIGH,CRITICAL'
+
+      - name: Upload Trivy SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy.sarif
+
+  # ----------------------------------------------------------
+  # Job 3: Update Docker Hub description from README
+  # ----------------------------------------------------------
+  update-dockerhub-description:
+    name: Update Docker Hub Description
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update Docker Hub README
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ env.IMAGE_NAME }}
+          readme-filepath: ./README.md
