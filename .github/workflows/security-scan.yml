@@ -91,16 +91,8 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          args: |
-            --report-format sarif
-            --report-path gitleaks.sarif
-
-      - name: Upload Gitleaks SARIF
-        uses: github/codeql-action/upload-sarif@v4
-        if: always()
-        with:
-          sarif_file: gitleaks.sarif
+        # Note: gitleaks-action v2 automatically uploads to the Security tab 
+        # when GITHUB_TOKEN is provided. No manual upload-sarif step needed!
 
   # ----------------------------------------------------------
   # Job 4: Trivy — IaC, Dockerfile, and filesystem scanning
