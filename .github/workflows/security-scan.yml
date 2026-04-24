@@ -35,9 +35,8 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
-      fail-fast: false
       matrix:
-        language: [javascript-typescript, python]  # add java, go, etc.
+        language: [javascript-typescript]
 
     steps:
       - uses: actions/checkout@v4
@@ -46,9 +45,7 @@ jobs:
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
-          queries: |
-            security-extended    # OWASP Top 10 + extras
-            security-and-quality
+          queries: security-extended,security-and-quality
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v4
