@@ -144,7 +144,7 @@ jobs:
         with:
           file: coverage/lcov.info
           flags: unit-tests
-          fail_ci_if_error: true
+          fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
 
   # ----------------------------------------------------------
