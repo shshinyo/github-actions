@@ -37,10 +37,10 @@ defaults:
     shell: bash
 
 jobs:
-  # ------------------------------------------------------------
+  # ----------------------------------------------------------
   # Job 1: Read matrix configuration from file
   # Allows teams to update test matrix without touching workflow
-  # ------------------------------------------------------------
+  # ----------------------------------------------------------
   prepare:
     name: Prepare CI Matrix
     runs-on: ubuntu-latest
