@@ -123,19 +123,19 @@ jobs:
           sarif_file: trivy-fs.sarif
           category: trivy-filesystem
 
-      # Scan Terraform/CloudFormation for misconfigurations
+      # Scan for IaC misconfigurations (only if terraform directory exists)
       - name: Trivy IaC scan
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: config
-          scan-ref: terraform/
+          scan-ref: .      # Scan entire repo for any IaC (Dockerfile, docker-compose, etc)
           format: sarif
           output: trivy-iac.sarif
-          exit-code: '0'    # warn only on IaC
+          exit-code: '0'
 
       - name: Upload Trivy IaC SARIF
         uses: github/codeql-action/upload-sarif@v4
-        if: always()
+        if: hashFiles('**/*.tf', '**/*.yaml', '**/Dockerfile') != ''
         with:
           sarif_file: trivy-iac.sarif
           category: trivy-iac
@@ -152,17 +152,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run ZAP API Scan
-        uses: zaproxy/action-api-scan@v0.7.0
-        with:
-          target: 'https://staging.myapp.com/api/openapi.json'
-          format: openapi
-          rules_file_name: '.zap/rules.tsv'
-          cmd_options: '-I'     # don't fail on alerts (report only)
-
-      - name: Upload ZAP report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: zap-report
-          path: report_json.json
+      # NOTE: This scan requires a live staging/production URL to work.
+      # It is commented out by default to prevent build failures.
+      # - name: Run ZAP API Scan
+      #   uses: zaproxy/action-api-scan@v0.7.0
+      #   with:
+      #     target: 'https://staging.myapp.com/api/openapi.json' # REPLACE WITH YOUR URL
+      #     format: openapi
+      #     cmd_options: '-I'
