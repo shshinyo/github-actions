@@ -36,7 +36,7 @@ jobs:
       contents: read
       packages: write           # push to GHCR
       id-token: write           # OIDC for signing
-      attestations: write       # SBOM attestation
+      # attestations: write       # SBOM attestation (Requires GitHub Org)
 
     outputs:
       image-digest: ${{ steps.build.outputs.digest }}
@@ -114,14 +114,14 @@ jobs:
             GIT_SHA=${{ github.sha }}
             VERSION=${{ steps.meta.outputs.version }}
 
-      # 8. Generate SBOM attestation (supply chain security)
-      - name: Attest image
-        if: github.event_name != 'pull_request'
-        uses: actions/attest-build-provenance@v1
-        with:
-          subject-name: ${{ env.REGISTRY_GHCR }}/${{ env.IMAGE_NAME_GHCR }}
-          subject-digest: ${{ steps.build.outputs.digest }}
-          push-to-registry: true
+      # 8. Generate SBOM attestation (Requires GitHub Organization)
+      # - name: Attest image
+      #   if: github.event_name != 'pull_request'
+      #   uses: actions/attest-build-provenance@v1
+      #   with:
+      #     subject-name: ${{ env.REGISTRY_GHCR }}/${{ env.IMAGE_NAME_GHCR }}
+      #     subject-digest: ${{ steps.build.outputs.digest }}
+      #     push-to-registry: true
 
   # ----------------------------------------------------------
   # Job 2: Scan the pushed image for CVEs (Trivy)

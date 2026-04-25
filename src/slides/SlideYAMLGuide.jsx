@@ -5,8 +5,8 @@ const workflows = [
     file: 'docker-build-push.yml',
     title: '🐳 Docker Build & Push',
     desc: 'Takes your code, puts it in a container, and sends it to GitHub & Docker Hub.',
-    concepts: ['Multi-platform (arm64/amd64)', 'Layer Caching', 'SBOM Identity', 'Vulnerability Scanning'],
-    flow: ['Build', 'Scan', 'Attest', 'Push'],
+    concepts: ['Multi-platform (arm64/amd64)', 'Layer Caching', 'Vulnerability Scanning', 'GitHub Packages (GHCR)'],
+    flow: ['Build', 'Scan', 'Push'],
     demo: 'Create a tag starting with "v" (e.g. v1.0.0); Watch it build for both Intel and Mac chips; Check your GitHub Packages page for the result',
     tags: ['Multi-arch', 'Security']
   },
