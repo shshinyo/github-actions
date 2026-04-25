@@ -43,18 +43,18 @@ export default function SlideRollback() {
         {/* Deploy history + rollback demo */}
         <div className="card" style={{ display:'flex', flexDirection:'column', gap:10 }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:4 }}>
-            <span style={{ fontWeight:700, fontSize:13 }}>🕐 Deploy History</span>
-            <button className="btn btn-danger" onClick={startRollback} disabled={rollbackStep !== null} style={{ fontSize:12, padding:'6px 12px' }}>
+            <span style={{ fontWeight:700, fontSize:15 }}>🕐 Deploy History</span>
+            <button className="btn btn-danger" onClick={startRollback} disabled={rollbackStep !== null} style={{ fontSize:14, padding:'8px 16px' }}>
               {rollbackStep !== null ? '⏳ Rolling back...' : '🔄 Simulate Rollback'}
             </button>
           </div>
 
           {history.map((h, i) => (
             <div key={i} style={{ display:'flex', gap:10, alignItems:'center', padding:'8px 12px', background: h.status === 'current' ? 'rgba(248,81,73,0.08)' : h.status === 'previous' ? 'rgba(63,185,80,0.08)' : 'var(--bg-secondary)', borderRadius:'var(--radius)', border:`1px solid ${h.status === 'current' ? 'rgba(248,81,73,0.3)' : h.status === 'previous' ? 'rgba(63,185,80,0.3)' : 'var(--border)'}` }}>
-              <code style={{ fontFamily:'var(--font-mono)', fontSize:11, color:'var(--accent-blue)', flexShrink:0 }}>{h.sha}</code>
-              <span style={{ flex:1, fontSize:12, color:'var(--text-primary)' }}>{h.msg}</span>
-              <span style={{ fontSize:11, color:'var(--text-muted)' }}>{h.who}</span>
-              <span style={{ fontSize:11, color:'var(--text-muted)', flexShrink:0 }}>{h.time}</span>
+              <code style={{ fontFamily:'var(--font-mono)', fontSize:13, color:'var(--accent-blue)', flexShrink:0 }}>{h.sha}</code>
+              <span style={{ flex:1, fontSize:14, color:'var(--text-primary)' }}>{h.msg}</span>
+              <span style={{ fontSize:13, color:'var(--text-muted)' }}>{h.who}</span>
+              <span style={{ fontSize:13, color:'var(--text-muted)', flexShrink:0 }}>{h.time}</span>
               {h.status === 'current' && <span className="badge badge-danger">CURRENT 🔥</span>}
               {h.status === 'previous' && <span className="badge badge-success">TARGET ✓</span>}
             </div>
@@ -64,8 +64,8 @@ export default function SlideRollback() {
           {(rollbackStep !== null || done) && (
             <div style={{ marginTop:4 }}>
               {steps.slice(0, rollbackStep !== null ? rollbackStep + 1 : steps.length).map((s, i) => (
-                <div key={i} style={{ display:'flex', gap:8, alignItems:'center', fontSize:12, padding:'3px 0', color: i === rollbackStep ? 'var(--accent-blue)' : 'var(--accent-green)' }}>
-                  <span>{i === rollbackStep ? '⏳' : '✅'}</span> {s}
+                <div key={i} style={{ display:'flex', gap:10, alignItems:'center', fontSize:15, padding:'5px 0', color: i === rollbackStep ? 'var(--accent-blue)' : 'var(--accent-green)' }}>
+                  <span style={{ fontSize: 18 }}>{i === rollbackStep ? '⏳' : '✅'}</span> {s}
                 </div>
               ))}
             </div>
@@ -77,14 +77,14 @@ export default function SlideRollback() {
           {strategies.map((s, i) => (
             <div key={i} className="card card-sm" onClick={() => setSelected(selected === i ? null : i)} style={{ cursor:'pointer', border:`1px solid ${selected === i ? 'var(--accent-blue)' : 'var(--border)'}`, transition:'all 0.2s' }}>
               <div style={{ display:'flex', gap:10, alignItems:'center' }}>
-                <span style={{ fontSize:20 }}>{s.icon}</span>
+                <span style={{ fontSize:28 }}>{s.icon}</span>
                 <div style={{ flex:1 }}>
-                  <div style={{ fontSize:13, fontWeight:700 }}>{s.title}</div>
-                  <div style={{ fontSize:11, color:'var(--text-muted)' }}>⏱ {s.time} · Risk: {s.risk}</div>
+                  <div style={{ fontSize:15, fontWeight:700 }}>{s.title}</div>
+                  <div style={{ fontSize:13, color:'var(--text-muted)' }}>⏱ {s.time} · Risk: {s.risk}</div>
                 </div>
-                <span className="tag tag-blue" style={{ fontSize:10 }}>Best for: {s.best}</span>
+                <span className="tag tag-blue" style={{ fontSize:11 }}>Best for: {s.best}</span>
               </div>
-              {selected === i && <p style={{ fontSize:12, color:'var(--text-secondary)', marginTop:8, lineHeight:1.5, paddingTop:8, borderTop:'1px solid var(--border)' }}>{s.desc}</p>}
+              {selected === i && <p style={{ fontSize:14.5, color:'var(--text-secondary)', marginTop:10, lineHeight:1.5, paddingTop:10, borderTop:'1px solid var(--border)' }}>{s.desc}</p>}
             </div>
           ))}
         </div>

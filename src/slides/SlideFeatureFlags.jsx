@@ -29,7 +29,7 @@ export default function SlideFeatureFlags() {
       <div className="grid-2 fade-up delay-2" style={{ gap:14 }}>
         {/* Flag control panel */}
         <div className="card" style={{ display:'flex', flexDirection:'column', gap:8 }}>
-          <span style={{ fontWeight:700, fontSize:13, marginBottom:4 }}>🚩 Feature Flag Dashboard</span>
+          <span style={{ fontWeight:700, fontSize:16, marginBottom:6 }}>🚩 Feature Flag Dashboard</span>
           {flags.map((f) => (
             <div key={f.id} style={{ padding:'10px 12px', background:'var(--bg-secondary)', borderRadius:'var(--radius)', border:`1px solid ${detail === f.id ? 'var(--accent-blue)' : 'var(--border)'}`, cursor:'pointer', transition:'all 0.2s' }}
               onClick={() => setDetail(detail === f.id ? null : f.id)}>
@@ -40,21 +40,21 @@ export default function SlideFeatureFlags() {
                   <div className="toggle-thumb" />
                 </label>
                 <div style={{ flex:1 }}>
-                  <div style={{ fontSize:12.5, fontWeight:600, color: f.enabled ? 'var(--text-primary)' : 'var(--text-muted)' }}>{f.label}</div>
-                  <div style={{ fontSize:10, color:'var(--text-muted)' }}>{f.env} · risk: <span style={{ color: riskColor[f.risk] }}>{f.risk}</span></div>
+                  <div style={{ fontSize:15, fontWeight:700, color: f.enabled ? 'var(--text-primary)' : 'var(--text-muted)' }}>{f.label}</div>
+                  <div style={{ fontSize:12, color:'var(--text-muted)' }}>{f.env} · risk: <span style={{ color: riskColor[f.risk] }}>{f.risk}</span></div>
                 </div>
-                <span style={{ fontSize:12, fontFamily:'var(--font-mono)', color: f.enabled ? 'var(--accent-green)' : 'var(--text-muted)', width:42, textAlign:'right', flexShrink:0 }}>{f.rollout}%</span>
+                <span style={{ fontSize:14, fontFamily:'var(--font-mono)', color: f.enabled ? 'var(--accent-green)' : 'var(--text-muted)', width:50, textAlign:'right', flexShrink:0 }}>{f.rollout}%</span>
               </div>
 
               {detail === f.id && (
                 <div style={{ marginTop:10, paddingTop:10, borderTop:'1px solid var(--border)' }}>
-                  <p style={{ fontSize:11.5, color:'var(--text-secondary)', lineHeight:1.5, marginBottom:10 }}>{f.desc}</p>
-                  <div style={{ display:'flex', gap:8, alignItems:'center' }}>
-                    <span style={{ fontSize:11, color:'var(--text-muted)', flexShrink:0 }}>Rollout:</span>
+                  <p style={{ fontSize:14.5, color:'var(--text-secondary)', lineHeight:1.5, marginBottom:12 }}>{f.desc}</p>
+                  <div style={{ display:'flex', gap:10, alignItems:'center' }}>
+                    <span style={{ fontSize:13, color:'var(--text-muted)', flexShrink:0 }}>Rollout:</span>
                     <input type="range" min={0} max={100} step={5} value={f.rollout} onClick={e => e.stopPropagation()}
                       onChange={e => setRollout(f.id, e.target.value)}
                       style={{ flex:1, accentColor:'var(--accent-blue)' }} />
-                    <span style={{ fontFamily:'var(--font-mono)', fontSize:11, width:36, textAlign:'right' }}>{f.rollout}%</span>
+                    <span style={{ fontFamily:'var(--font-mono)', fontSize:13, width:40, textAlign:'right' }}>{f.rollout}%</span>
                   </div>
                   <div style={{ marginTop:8 }}>
                     <div style={{ display:'flex', justifyContent:'space-between', fontSize:10, color:'var(--text-muted)', marginBottom:4 }}>
@@ -73,9 +73,9 @@ export default function SlideFeatureFlags() {
         {/* Explanation */}
         <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
           <div className="card card-sm" style={{ borderLeft:'3px solid var(--accent-purple)' }}>
-            <div style={{ fontWeight:700, fontSize:13, marginBottom:6 }}>🎯 Why Feature Flags?</div>
+            <div style={{ fontWeight:700, fontSize:15, marginBottom:8 }}>🎯 Why Feature Flags?</div>
             {['Separate deploy from release — push code any time', 'Instant kill-switch without a hotfix deploy', 'A/B test with real users in production safely', 'Progressive rollout: 5% → 25% → 100%', 'Target specific users, regions, or segments'].map((t,i) => (
-              <div key={i} style={{ display:'flex', gap:8, fontSize:12, color:'var(--text-secondary)', padding:'2px 0' }}>
+              <div key={i} style={{ display:'flex', gap:10, fontSize:15, color:'var(--text-secondary)', padding:'3px 0' }}>
                 <span style={{ color:'var(--accent-purple)' }}>▸</span>{t}
               </div>
             ))}
@@ -93,7 +93,7 @@ export default function SlideFeatureFlags() {
             </pre>
           </div>
           <div className="card card-sm" style={{ background:'rgba(188,140,255,0.06)', border:'1px solid rgba(188,140,255,0.2)' }}>
-            <div style={{ fontSize:12, color:'var(--text-secondary)', lineHeight:1.6 }}>
+            <div style={{ fontSize:15, color:'var(--text-secondary)', lineHeight:1.6 }}>
               💡 <strong style={{ color:'var(--accent-purple)' }}>Tools:</strong> LaunchDarkly, AWS AppConfig, Flagsmith, Unleash, or a simple DynamoDB/Redis-backed custom solution.
             </div>
           </div>

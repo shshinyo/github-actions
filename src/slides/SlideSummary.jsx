@@ -39,17 +39,17 @@ export default function SlideSummary() {
         <div className="grid-2 fade-up delay-2" style={{ gap:14, flex:1 }}>
           {pillars.map((p, i) => (
             <div key={i} className="card" style={{ borderTop:`3px solid ${colorMap[p.color]}`, animationDelay:`${i*0.05}s` }}>
-              <div style={{ display:'flex', gap:10, alignItems:'center', marginBottom:12 }}>
-                <span style={{ fontSize:24 }}>{p.icon}</span>
+              <div style={{ display:'flex', gap:12, alignItems:'center', marginBottom:16 }}>
+                <span style={{ fontSize:32 }}>{p.icon}</span>
                 <div>
-                  <div style={{ fontSize:15, fontWeight:800 }}>{p.title}</div>
-                  <span className={`tag ${tagMap[p.color]}`} style={{ fontSize:10 }}>{p.color}</span>
+                  <div style={{ fontSize:18, fontWeight:800 }}>{p.title}</div>
+                  <span className={`tag ${tagMap[p.color]}`} style={{ fontSize:12 }}>{p.color}</span>
                 </div>
               </div>
               <ul style={{ listStyle:'none', display:'flex', flexDirection:'column', gap:6 }}>
                 {p.points.map((pt, j) => (
-                  <li key={j} style={{ display:'flex', gap:8, alignItems:'flex-start', fontSize:12.5, color:'var(--text-secondary)', lineHeight:1.4 }}>
-                    <span style={{ color: colorMap[p.color], fontSize:12, flexShrink:0, fontWeight:700 }}>✓</span>{pt}
+                  <li key={j} style={{ display:'flex', gap:10, alignItems:'flex-start', fontSize:15, color:'var(--text-secondary)', lineHeight:1.4 }}>
+                    <span style={{ color: colorMap[p.color], fontSize:14, flexShrink:0, fontWeight:700 }}>✓</span>{pt}
                   </li>
                 ))}
               </ul>
@@ -58,10 +58,10 @@ export default function SlideSummary() {
         </div>
 
         <div className="fade-up delay-4 card card-sm" style={{ background:'rgba(88,166,255,0.06)', border:'1px solid rgba(88,166,255,0.2)', textAlign:'center' }}>
-          <div style={{ fontSize:18, fontWeight:800, marginBottom:6 }}>
+          <div style={{ fontSize:24, fontWeight:900, marginBottom:8 }}>
             🚀 <span className="glow-blue">Start small, automate incrementally, measure everything.</span>
           </div>
-          <p style={{ fontSize:13, color:'var(--text-secondary)', lineHeight:1.6, maxWidth:640, margin:'0 auto' }}>
+          <p style={{ fontSize:16, color:'var(--text-secondary)', lineHeight:1.6, maxWidth:800, margin:'0 auto' }}>
             A mature deployment pipeline is not built overnight. Pick one pillar, implement it well, measure the impact, then move to the next. GitHub Actions gives you all the building blocks — how you compose them defines your reliability.
           </p>
           <div style={{ display:'flex', justifyContent:'center', gap:16, marginTop:14 }}>

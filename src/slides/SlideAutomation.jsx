@@ -66,10 +66,10 @@ export default function SlideAutomation() {
           {useCases.map(u => (
             <button key={u.id} onClick={() => setActive(u.id)}
               style={{ display:'flex', gap:10, alignItems:'center', padding:'10px 12px', border:`1px solid ${active === u.id ? colorMap[u.color] : 'var(--border)'}`, background: active === u.id ? `rgba(${u.color === 'blue' ? '88,166,255' : u.color === 'green' ? '63,185,80' : u.color === 'red' ? '248,81,73' : u.color === 'orange' ? '210,153,34' : '188,140,255'},0.1)` : 'var(--bg-card)', borderRadius:'var(--radius)', cursor:'pointer', textAlign:'left', transition:'all 0.2s', fontFamily:'var(--font-sans)' }}>
-              <span style={{ fontSize:18, flexShrink:0 }}>{u.icon}</span>
+              <div style={{ fontSize:15, flexShrink:0 }}>{u.icon}</div>
               <div>
-                <div style={{ fontSize:12.5, fontWeight:700, color: active === u.id ? colorMap[u.color] : 'var(--text-primary)' }}>{u.title}</div>
-                <div style={{ fontSize:10, color:'var(--text-muted)', fontFamily:'var(--font-mono)' }}>{u.workflow}</div>
+                <div style={{ fontSize:14.5, fontWeight:700, color: active === u.id ? colorMap[u.color] : 'var(--text-primary)' }}>{u.title}</div>
+                <div style={{ fontSize:12, color:'var(--text-muted)', fontFamily:'var(--font-mono)' }}>{u.workflow}</div>
               </div>
             </button>
           ))}
@@ -80,23 +80,23 @@ export default function SlideAutomation() {
           <div style={{ flex:1, display:'flex', flexDirection:'column', gap:12, overflow:'hidden' }}>
             <div className="card" style={{ borderTop:`3px solid ${colorMap[current.color]}`, flex:'none' }}>
               <div style={{ display:'flex', gap:12, alignItems:'flex-start', marginBottom:10 }}>
-                <span style={{ fontSize:28 }}>{current.icon}</span>
+                <span style={{ fontSize:36 }}>{current.icon}</span>
                 <div style={{ flex:1 }}>
-                  <div style={{ fontSize:17, fontWeight:800, marginBottom:4 }}>{current.title}</div>
+                  <div style={{ fontSize:22, fontWeight:800, marginBottom:4 }}>{current.title}</div>
                   <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
                     <span className={`tag ${tagMap[current.color]}`} style={{ fontSize:10 }}>Trigger: {current.trigger}</span>
                     <span className="tag tag-blue" style={{ fontSize:10, fontFamily:'var(--font-mono)' }}>.github/workflows/{current.workflow}</span>
                   </div>
                 </div>
               </div>
-              <p style={{ fontSize:13, color:'var(--text-secondary)', lineHeight:1.6 }}>{current.desc}</p>
+              <p style={{ fontSize:17, color:'var(--text-secondary)', lineHeight:1.6 }}>{current.desc}</p>
             </div>
 
             <div className="card" style={{ flex:1, overflow:'auto' }}>
-              <div style={{ fontWeight:700, fontSize:13, marginBottom:10, color: colorMap[current.color] }}>✨ What it does in this repo:</div>
-              <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+              <div style={{ fontWeight:700, fontSize:17, marginBottom:12, color: colorMap[current.color] }}>✨ What it does in this repo:</div>
+              <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
                 {current.examples.map((ex, i) => (
-                  <div key={i} style={{ display:'flex', gap:10, alignItems:'flex-start', padding:'8px 12px', background:'var(--bg-secondary)', border:'1px solid var(--border)', borderRadius:'var(--radius)', fontSize:13, color:'var(--text-primary)' }}>
+                  <div key={i} style={{ display:'flex', gap:12, alignItems:'flex-start', padding:'10px 16px', background:'var(--bg-secondary)', border:'1px solid var(--border)', borderRadius:'var(--radius)', fontSize:16, color:'var(--text-primary)' }}>
                     <span style={{ color: colorMap[current.color], fontWeight:700, flexShrink:0 }}>▸</span>
                     {ex}
                   </div>

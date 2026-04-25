@@ -87,8 +87,8 @@ export default function SlideYAMLGuide() {
                 fontFamily: 'inherit'
               }}
             >
-              <div style={{ color: active === i ? 'var(--accent-blue)' : 'var(--text-primary)', fontWeight: 700, fontSize: 13 }}>{w.title}</div>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>{w.file}</div>
+              <div style={{ color: active === i ? 'var(--accent-blue)' : 'var(--text-primary)', fontWeight: 700, fontSize: 16 }}>{w.title}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>{w.file}</div>
             </button>
           ))}
         </div>
@@ -96,7 +96,7 @@ export default function SlideYAMLGuide() {
         {/* Details */}
         <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6, color: 'var(--accent-blue)' }}>{current.title}</div>
+            <div style={{ fontSize:22, fontWeight: 800, marginBottom: 8, color: 'var(--accent-blue)' }}>{current.title}</div>
             <div style={{ display: 'flex', gap: 6 }}>
               {current.tags.map(t => <span key={t} className="tag tag-blue" style={{ fontSize: 10 }}>{t}</span>)}
             </div>
@@ -149,10 +149,10 @@ export default function SlideYAMLGuide() {
             </div>
 
             <div style={{ background: 'rgba(52,211,153,0.05)', padding: 12, borderRadius: 'var(--radius)', border: '1px solid rgba(52,211,153,0.2)' }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--accent-green)', textTransform: 'uppercase', marginBottom: 8 }}>Live Demo Steps</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--accent-green)', textTransform: 'uppercase', marginBottom: 12 }}>Live Demo Steps</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {current.demo.split('; ').map((step, i) => (
-                  <div key={i} style={{ display: 'flex', gap: 10, fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                  <div key={i} style={{ display: 'flex', gap: 12, fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
                     <div style={{ 
                       minWidth: 18, 
                       height: 18, 

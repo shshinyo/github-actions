@@ -47,17 +47,17 @@ export default function SlidePostDeploy() {
         {practices.map((p, i) => (
           <div key={i} className="card card-sm" style={{ animationDelay:`${i*0.04}s`, borderLeft:`3px solid ${colorMap[p.color]}` }}>
             <div style={{ display:'flex', gap:8, alignItems:'flex-start', marginBottom:6 }}>
-              <span style={{ fontSize:20 }}>{p.icon}</span>
+              <span style={{ fontSize:28 }}>{p.icon}</span>
               <div>
-                <div style={{ fontSize:13, fontWeight:700, marginBottom:2 }}>{p.title}</div>
+                <div style={{ fontSize:16, fontWeight:700, marginBottom:4 }}>{p.title}</div>
                 <span className={`tag ${tagMap[p.color]}`} style={{ fontSize:10 }}>{p.color}</span>
               </div>
             </div>
-            <p style={{ fontSize:11.5, color:'var(--text-secondary)', lineHeight:1.5, marginBottom:8 }}>{p.desc}</p>
+            <p style={{ fontSize:15, color:'var(--text-secondary)', lineHeight:1.5, marginBottom:10 }}>{p.desc}</p>
             <ul style={{ listStyle:'none', display:'flex', flexDirection:'column', gap:3 }}>
               {p.items.map((it, j) => (
-                <li key={j} style={{ display:'flex', gap:6, alignItems:'center', fontSize:11, color:'var(--text-secondary)' }}>
-                  <span style={{ color: colorMap[p.color], fontSize:10 }}>▸</span>{it}
+                <li key={j} style={{ display:'flex', gap:6, alignItems:'center', fontSize:14.5, color:'var(--text-secondary)' }}>
+                  <span style={{ color: colorMap[p.color], fontSize:13 }}>▸</span>{it}
                 </li>
               ))}
             </ul>

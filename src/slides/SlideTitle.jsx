@@ -9,6 +9,14 @@ const useCases = [
   { icon:'🔔', label:'Notifications', desc:'Slack, Teams, email' },
 ]
 
+const agendaItems = [
+  { id: 1, title: 'Automation Platform', desc: 'CI/CD, Dynamic Matrix, OIDC', color: '--accent-blue' },
+  { id: 2, title: 'Container Excellence', desc: 'Secure Docker Ops, Multi-arch', color: '--accent-purple' },
+  { id: 3, title: 'The Workflow', desc: 'Health Checks, Rollbacks', color: '--accent-green' },
+  { id: 4, title: 'Security First', desc: 'SAST, DAST, Secret Scanning', color: '--accent-red' },
+  { id: 5, title: 'Insights & Feedback', desc: 'Observability & Analytics', color: '--accent-orange' },
+]
+
 export default function SlideTitle() {
   return (
     <div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', position:'relative', overflow:'hidden' }}>
@@ -18,45 +26,46 @@ export default function SlideTitle() {
         <div className="title-bg-glow2" />
       </div>
 
-      <div style={{ position:'relative', zIndex:1, textAlign:'center', maxWidth:820 }}>
-        <div className="fade-up delay-1" style={{ marginBottom:14 }}>
-          <span className="tag tag-green" style={{ fontSize:11 }}>🤖 Developer Automation Platform</span>
+      <div style={{ position:'relative', zIndex:1, textAlign:'center', maxWidth:900 }}>
+        <div className="fade-up delay-1" style={{ marginBottom:16 }}>
+          <span className="tag tag-green" style={{ fontSize:12, padding:'4px 14px' }}>🤖 Developer Automation Platform</span>
         </div>
 
-        <h1 className="fade-up delay-2" style={{ fontSize:50, fontWeight:900, letterSpacing:'-1.5px', lineHeight:1.05, marginBottom:14 }}>
+        <h1 className="fade-up delay-2" style={{ fontSize:64, fontWeight:900, letterSpacing:'-2px', lineHeight:1.0, marginBottom:16 }}>
           GitHub Actions
           <br />
           <span className="glow-blue">Beyond CI/CD</span>
         </h1>
 
-        {/* Key message callout */}
-        <div className="fade-up delay-3" style={{ display:'inline-block', marginBottom:18, padding:'10px 20px', background:'rgba(63,185,80,0.1)', border:'1px solid rgba(63,185,80,0.3)', borderRadius:'var(--radius-lg)' }}>
-          <p style={{ fontSize:15, color:'var(--accent-green)', fontWeight:600, margin:0 }}>
-            GitHub Actions is not just a CI/CD tool —<br />
-            it's a <em>developer automation platform</em> for your entire workflow
+        <div className="fade-up delay-3" style={{ marginBottom:32 }}>
+          <p style={{ fontSize:18, color:'var(--text-secondary)', fontWeight:500, margin:0, maxWidth:600, marginInline:'auto' }}>
+            Transforming GitHub from a code host into a 
+            <span style={{ color:'var(--text-primary)', fontWeight:700 }}> full-stack automation engine</span> for your entire SDLC.
           </p>
         </div>
 
-        {/* Use case chips */}
-        <div className="fade-up delay-3" style={{ display:'flex', justifyContent:'center', gap:8, flexWrap:'wrap', marginBottom:22 }}>
-          {useCases.map(u => (
-            <div key={u.label} style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 12px', background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:'var(--radius)', fontSize:12 }}>
-              <span>{u.icon}</span>
-              <span style={{ fontWeight:600 }}>{u.label}</span>
-              <span style={{ color:'var(--text-muted)', fontSize:11 }}>— {u.desc}</span>
-            </div>
-          ))}
+        {/* Agenda Section */}
+        <div className="fade-up delay-4" style={{ textAlign:'left', background:'rgba(22,27,34,0.6)', border:'1px solid var(--border)', borderRadius:'var(--radius-xl)', padding:'24px 32px', backdropFilter:'blur(10px)', marginBottom:32 }}>
+          <h3 style={{ fontSize:14, textTransform:'uppercase', letterSpacing:'1px', color:'var(--text-muted)', marginBottom:16, fontWeight:700 }}>Presentation Agenda</h3>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px 32px' }}>
+            {agendaItems.map((item, i) => (
+              <div key={item.id} style={{ display:'flex', alignItems:'center', gap:16, borderBottom:'1px solid rgba(255,255,255,0.03)', paddingBottom:8 }}>
+                <div style={{ fontSize:20, fontWeight:900, color:`var(${item.color})`, opacity:0.8, width:24 }}>{item.id}</div>
+                <div>
+                  <div style={{ fontSize:16, fontWeight:700, color:'var(--text-primary)' }}>{item.title}</div>
+                  <div style={{ fontSize:13, color:'var(--text-muted)' }}>{item.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="fade-up delay-4" style={{ display:'flex', justifyContent:'center', gap:28 }}>
-          {[
-            { val:'14', lbl:'Slides' },
-            { val:'6', lbl:'Real Workflow Files' },
-            { val:'5+', lbl:'Live Demos' },
-          ].map(({ val, lbl }) => (
-            <div key={lbl} style={{ textAlign:'center' }}>
-              <div style={{ fontSize:28, fontWeight:800, color:'var(--accent-blue)', fontFamily:'var(--font-mono)' }}>{val}</div>
-              <div style={{ fontSize:11, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.5px' }}>{lbl}</div>
+        {/* Use case chips (compact) */}
+        <div className="fade-up delay-5" style={{ display:'flex', justifyContent:'center', gap:8, flexWrap:'wrap', opacity:0.6 }}>
+          {useCases.map(u => (
+            <div key={u.label} style={{ display:'flex', alignItems:'center', gap:6, padding:'4px 10px', background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:'var(--radius)', fontSize:11 }}>
+              <span>{u.icon}</span>
+              <span style={{ fontWeight:600 }}>{u.label}</span>
             </div>
           ))}
         </div>

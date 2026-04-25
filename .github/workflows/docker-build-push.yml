@@ -22,7 +22,7 @@ env:
   REGISTRY_GHCR: ghcr.io
   REGISTRY_DOCKERHUB: docker.io
   IMAGE_NAME_GHCR: ${{ github.repository }}            # shshinyo/github-actions
-  IMAGE_NAME_DOCKERHUB: 2222002/github-actions       # User's Docker Hub account
+  IMAGE_NAME_DOCKERHUB: ${{ secrets.IMAGE_NAME_DOCKERHUB }}       # Set this in GitHub Secrets (e.g., username/repo)
 
 jobs:
   # ----------------------------------------------------------

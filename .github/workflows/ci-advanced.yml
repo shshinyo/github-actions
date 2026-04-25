@@ -232,15 +232,32 @@ jobs:
             --distribution-id ${{ secrets.CLOUDFRONT_ID }} \
             --paths "/*"
 
-      - name: Notification to Microsoft Teams
-        if: always()
-        uses: rtCamp/action-teams-helper@v1.2
-        env:
-          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
-          # Customize the card
-          MSG_TITLE: "Deploy to ${{ inputs.environment || 'staging' }}: ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }}"
-          MSG_BODY: |
-            **Commit**: `${{ github.sha }}` by @${{ github.actor }}
-            **Workflow**: [${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-          # Card color: 32CD32 (LimeGreen) for success, DC143C (Crimson) for failure
-          THEME_COLOR: "${{ job.status == 'success' && '32CD32' || 'DC143C' }}"
+      # - name: Notification to Microsoft Teams
+      #   if: always()
+      #   run: |
+      #     curl -H "Content-Type: application/json" \
+      #     -d '{
+      #       "@type": "MessageCard",
+      #       "@context": "http://schema.org/extensions",
+      #       "summary": "Deployment Notification",
+      #       "themeColor": "${{ job.status == 'success' && '32CD32' || 'DC143C' }}",
+      #       "title": "Deploy to ${{ inputs.environment || 'staging' }}: ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }}",
+      #       "sections": [
+      #         {
+      #           "activityTitle": "Commit: ${{ github.sha }}",
+      #           "activitySubtitle": "By @${{ github.actor }}",
+      #           "activityImage": "https://github.com/${{ github.actor }}.png?size=32",
+      #           "facts": [
+      #             { "name": "Workflow", "value": "${{ github.workflow }}" }
+      #           ],
+      #           "markdown": true
+      #         }
+      #       ],
+      #       "potentialAction": [
+      #         {
+      #           "@type": "OpenUri",
+      #           "name": "View Run",
+      #           "targets": [{ "os": "default", "uri": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" }]
+      #         }
+      #       ]
+      #     }' ${{ secrets.TEAMS_WEBHOOK_URL }}

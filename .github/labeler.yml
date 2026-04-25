@@ -1,0 +1,18 @@
+# .github/labeler.yml
+# Labels applied to PRs based on file patterns
+
+'feature':
+  - changed-files:
+    - any-glob-to-any-file: 'src/**/*'
+'documentation':
+  - changed-files:
+    - any-glob-to-any-file: ['docs/**/*', 'README.md']
+'infrastructure':
+  - changed-files:
+    - any-glob-to-any-file: '.github/**/*'
+'frontend':
+  - changed-files:
+    - any-glob-to-any-file: 'src/slides/**/*'
+'release':
+  - changed-files:
+    - any-glob-to-any-file: 'package.json'

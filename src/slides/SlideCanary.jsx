@@ -40,7 +40,7 @@ export default function SlideCanary() {
         {/* Traffic visualizer */}
         <div className="card" style={{ display:'flex', flexDirection:'column', gap:14 }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-            <span style={{ fontWeight:700, fontSize:13 }}>🌊 Traffic Split (Load Balancer)</span>
+            <span style={{ fontWeight:700, fontSize:16 }}>🌊 Traffic Split (Load Balancer)</span>
             <div style={{ display:'flex', gap:6 }}>
               <button className="btn btn-outline" onClick={reset} style={{ fontSize:11, padding:'4px 10px' }}>Reset</button>
               <button className="btn btn-success" onClick={advancePhase} disabled={phase === phases.length-1} style={{ fontSize:11, padding:'4px 10px' }}>
@@ -55,13 +55,13 @@ export default function SlideCanary() {
               <div key={i} style={{ flex:1, height:4, borderRadius:2, background: i <= phase ? 'var(--accent-green)' : 'var(--border)', transition:'all 0.4s' }} title={p.label} />
             ))}
           </div>
-          <div style={{ fontSize:12, color:'var(--accent-green)', fontWeight:600 }}>Phase {phase+1}/{phases.length}: {phases[phase].label}</div>
+          <div style={{ fontSize:15, color:'var(--accent-green)', fontWeight:700 }}>Phase {phase+1}/{phases.length}: {phases[phase].label}</div>
 
           {/* Visual traffic bars */}
           <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
             <div>
-              <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, marginBottom:6 }}>
-                <span style={{ color:'var(--accent-blue)', fontWeight:600 }}>🔵 Blue (v1.2 — Stable)</span>
+              <div style={{ display:'flex', justifyContent:'space-between', fontSize:15, marginBottom:8 }}>
+                <span style={{ color:'var(--accent-blue)', fontWeight:700 }}>🔵 Blue (v1.2 — Stable)</span>
                 <span style={{ fontFamily:'var(--font-mono)', color:'var(--accent-blue)' }}>{blueTraffic}%</span>
               </div>
               <div className="meter" style={{ height:28, background:'rgba(88,166,255,0.1)', borderRadius:'var(--radius)' }}>
@@ -69,8 +69,8 @@ export default function SlideCanary() {
               </div>
             </div>
             <div>
-              <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, marginBottom:6 }}>
-                <span style={{ color:'var(--accent-green)', fontWeight:600 }}>🟢 Green (v1.3 — Canary)</span>
+              <div style={{ display:'flex', justifyContent:'space-between', fontSize:15, marginBottom:8 }}>
+                <span style={{ color:'var(--accent-green)', fontWeight:700 }}>🟢 Green (v1.3 — Canary)</span>
                 <span style={{ fontFamily:'var(--font-mono)', color:'var(--accent-green)' }}>{greenTraffic}%</span>
               </div>
               <div className="meter" style={{ height:28, background:'rgba(63,185,80,0.1)', borderRadius:'var(--radius)' }}>
@@ -105,15 +105,15 @@ export default function SlideCanary() {
           </div>
 
           <div className="card card-sm" style={{ borderLeft:'3px solid var(--accent-green)' }}>
-            <div style={{ fontWeight:700, fontSize:13, marginBottom:6 }}>🎯 Canary Decision Criteria</div>
+            <div style={{ fontWeight:700, fontSize:15, marginBottom:8 }}>🎯 Canary Decision Criteria</div>
             {['Error rate < 1% for 10 min window','p99 latency ≤ baseline + 20ms','No crash-level exceptions in Sentry','CPU/memory within normal bounds','Manual QA sign-off (optional)'].map((c, i) => (
-              <div key={i} style={{ display:'flex', gap:8, fontSize:12, color:'var(--text-secondary)', padding:'2px 0' }}>
+              <div key={i} style={{ display:'flex', gap:10, fontSize:15, color:'var(--text-secondary)', padding:'3px 0' }}>
                 <span style={{ color:'var(--accent-green)' }}>✓</span>{c}
               </div>
             ))}
           </div>
 
-          <div className="card card-sm" style={{ background:'rgba(63,185,80,0.06)', border:'1px solid rgba(63,185,80,0.15)', fontSize:12, color:'var(--text-secondary)', lineHeight:1.6 }}>
+          <div className="card card-sm" style={{ background:'rgba(63,185,80,0.06)', border:'1px solid rgba(63,185,80,0.15)', fontSize:15, color:'var(--text-secondary)', lineHeight:1.6 }}>
             💡 Use <strong style={{ color:'var(--accent-green)' }}>AWS CodeDeploy</strong>, <strong style={{ color:'var(--accent-green)' }}>Argo Rollouts</strong>, or <strong style={{ color:'var(--accent-green)' }}>Kubernetes Gateway API</strong> to automate the shift via GitHub Actions.
           </div>
         </div>

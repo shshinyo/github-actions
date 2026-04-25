@@ -52,15 +52,15 @@ export default function SlideEnhancements() {
       <div className="grid-2 fade-up delay-2" style={{ gap:12, flex:1 }}>
         {enhancements.map((cat, i) => (
           <div key={i} className="card" style={{ borderLeft:`3px solid ${colorMap[cat.color]}` }}>
-            <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
-              <span style={{ fontSize:16, fontWeight:700 }}>{cat.category}</span>
-              <span className={`tag ${tagMap[cat.color]}`} style={{ fontSize:10 }}>{cat.color}</span>
+            <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:16 }}>
+              <span style={{ fontSize:20, fontWeight:800 }}>{cat.category}</span>
+              <span className={`tag ${tagMap[cat.color]}`} style={{ fontSize:12 }}>{cat.color}</span>
             </div>
             <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
               {cat.items.map((item, j) => (
-                <div key={j} style={{ padding:'8px 10px', background:'var(--bg-secondary)', borderRadius:'var(--radius)', border:'1px solid var(--border)' }}>
-                  <div style={{ fontSize:12.5, fontWeight:700, marginBottom:3, color:'var(--text-primary)' }}>{item.title}</div>
-                  <div style={{ fontSize:11.5, color:'var(--text-secondary)', lineHeight:1.5 }}>{item.desc}</div>
+                <div key={j} style={{ padding:'12px 16px', background:'var(--bg-secondary)', borderRadius:'var(--radius)', border:'1px solid var(--border)' }}>
+                  <div style={{ fontSize:16, fontWeight:800, marginBottom:4, color:'var(--text-primary)' }}>{item.title}</div>
+                  <div style={{ fontSize:14.5, color:'var(--text-secondary)', lineHeight:1.5 }}>{item.desc}</div>
                 </div>
               ))}
             </div>

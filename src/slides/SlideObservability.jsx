@@ -67,7 +67,7 @@ export default function SlideObservability() {
         {/* Sparkline */}
         <div className="card" style={{ display:'flex', flexDirection:'column', gap:8 }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-            <span style={{ fontWeight:700, fontSize:13 }}>📈 Request Rate (live)</span>
+            <span style={{ fontWeight:700, fontSize:16 }}>📈 Request Rate (live)</span>
             <span className="badge badge-success"><span className="dot dot-green" style={{ marginRight:4 }} />Live</span>
           </div>
           <svg width="100%" height="50" viewBox={`0 0 ${history.length * 6} 50`} preserveAspectRatio="none">
@@ -83,10 +83,10 @@ export default function SlideObservability() {
           {/* Alerts */}
           <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
             {alerts.map(a => (
-              <div key={a.id} style={{ display:'flex', gap:8, alignItems:'flex-start', fontSize:11.5, padding:'5px 8px', background:'var(--bg-secondary)', borderRadius:'var(--radius)', border:`1px solid ${a.sev === 'warn' ? 'rgba(210,153,34,0.3)' : a.sev === 'ok' ? 'rgba(63,185,80,0.2)' : 'var(--border)'}` }}>
+              <div key={a.id} style={{ display:'flex', gap:10, alignItems:'flex-start', fontSize:14.5, padding:'6px 10px', background:'var(--bg-secondary)', borderRadius:'var(--radius)', border:`1px solid ${a.sev === 'warn' ? 'rgba(210,153,34,0.3)' : a.sev === 'ok' ? 'rgba(63,185,80,0.2)' : 'var(--border)'}` }}>
                 <span>{a.sev === 'warn' ? '⚠️' : a.sev === 'ok' ? '✅' : 'ℹ️'}</span>
                 <span style={{ flex:1, color:'var(--text-secondary)', lineHeight:1.4 }}>{a.msg}</span>
-                <span style={{ color:'var(--text-muted)', flexShrink:0, fontFamily:'var(--font-mono)', fontSize:10 }}>{a.ts}</span>
+                <span style={{ color:'var(--text-muted)', flexShrink:0, fontFamily:'var(--font-mono)', fontSize:12 }}>{a.ts}</span>
               </div>
             ))}
           </div>
@@ -97,10 +97,10 @@ export default function SlideObservability() {
           {practices.map((p, i) => (
             <div key={i} className="card card-sm" style={{ borderLeft:`3px solid var(--accent-${p.color})`, animationDelay:`${i*0.05}s` }}>
               <div style={{ display:'flex', gap:8, alignItems:'flex-start' }}>
-                <span style={{ fontSize:18 }}>{p.icon}</span>
+                <span style={{ fontSize:28 }}>{p.icon}</span>
                 <div>
-                  <div style={{ fontSize:13, fontWeight:700, marginBottom:2 }}>{p.title}</div>
-                  <div style={{ fontSize:11.5, color:'var(--text-secondary)', lineHeight:1.4 }}>{p.desc}</div>
+                  <div style={{ fontSize:16, fontWeight:700, marginBottom:4 }}>{p.title}</div>
+                  <div style={{ fontSize:14.5, color:'var(--text-secondary)', lineHeight:1.4 }}>{p.desc}</div>
                 </div>
               </div>
             </div>

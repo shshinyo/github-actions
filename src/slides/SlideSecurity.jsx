@@ -28,24 +28,24 @@ export default function SlideSecurity() {
           <div key={c.id} className="card card-sm" onClick={() => setExpanded(expanded === c.id ? null : c.id)}
             style={{ cursor:'pointer', border:`1px solid ${expanded === c.id ? statusColor[c.status] : 'var(--border)'}`, transition:'all 0.2s' }}>
             <div style={{ display:'flex', gap:10, alignItems:'center' }}>
-              <span style={{ fontSize:20, flexShrink:0 }}>{c.icon}</span>
+              <span style={{ fontSize:24, flexShrink:0 }}>{c.icon}</span>
               <div style={{ flex:1 }}>
-                <div style={{ fontSize:13, fontWeight:700 }}>{c.title}</div>
-                <div style={{ fontSize:10.5, color:'var(--text-muted)', fontFamily:'var(--font-mono)' }}>{c.tool}</div>
+                <div style={{ fontSize:15, fontWeight:700 }}>{c.title}</div>
+                <div style={{ fontSize:12, color:'var(--text-muted)', fontFamily:'var(--font-mono)' }}>{c.tool}</div>
               </div>
               <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:3 }}>
-                <span className={`badge ${statusBadge[c.status]}`}>{c.status.toUpperCase()}</span>
-                <span style={{ fontSize:10, color: statusColor[c.status], fontFamily:'var(--font-mono)' }}>{c.count}</span>
+                <span className={`badge ${statusBadge[c.status]}`} style={{ fontSize:12 }}>{c.status.toUpperCase()}</span>
+                <span style={{ fontSize:12, color: statusColor[c.status], fontFamily:'var(--font-mono)' }}>{c.count}</span>
               </div>
             </div>
             {expanded === c.id && (
-              <p style={{ marginTop:10, paddingTop:10, borderTop:'1px solid var(--border)', fontSize:11.5, color:'var(--text-secondary)', lineHeight:1.5 }}>{c.desc}</p>
+              <p style={{ marginTop:12, paddingTop:12, borderTop:'1px solid var(--border)', fontSize:14.5, color:'var(--text-secondary)', lineHeight:1.5 }}>{c.desc}</p>
             )}
           </div>
         ))}
       </div>
 
-      <div className="fade-up delay-4 card card-sm" style={{ background:'rgba(248,81,73,0.06)', border:'1px solid rgba(248,81,73,0.15)', fontSize:12, color:'var(--text-secondary)', lineHeight:1.6 }}>
+      <div className="fade-up delay-4 card card-sm" style={{ background:'rgba(248,81,73,0.06)', border:'1px solid rgba(248,81,73,0.15)', fontSize:15, color:'var(--text-secondary)', lineHeight:1.6 }}>
         🔑 <strong style={{ color:'var(--accent-red)' }}>Golden Rule:</strong> Never put secrets in workflow YAML. Use <code style={{ fontFamily:'var(--font-mono)', color:'var(--accent-cyan)' }}>$&#123;&#123; secrets.MY_KEY &#125;&#125;</code> — encrypted at rest, masked in logs, scoped per environment. Add OIDC to eliminate long-lived credentials entirely.
       </div>
     </div>
