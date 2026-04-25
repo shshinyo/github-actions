@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/shshinyo/github-actions/compare/v1.3.1...v1.3.2) (2026-04-25)
+
+
+### Bug Fixes
+
+* disable org-only attestation and update presentation slides ([ce417c2](https://github.com/shshinyo/github-actions/commit/ce417c21eba90e1f71c7242087ae13d8eaf962f3))
+
 ## [1.3.1](https://github.com/shshinyo/github-actions/compare/v1.3.0...v1.3.1) (2026-04-24)
 
 
