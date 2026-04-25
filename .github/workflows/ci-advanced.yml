@@ -232,14 +232,15 @@ jobs:
             --distribution-id ${{ secrets.CLOUDFRONT_ID }} \
             --paths "/*"
 
-      - name: Notify Microsoft Teams
+      - name: Notification to Microsoft Teams
         if: always()
-        uses: skalio/teams-webhook-action@v1
-        with:
-          webhook_url: ${{ secrets.TEAMS_WEBHOOK_URL }}
-          show_full_msg: false
-          color: ${{ job.status == 'success' && '28a745' || 'dc3545' }}
-          title: "Deploy to ${{ inputs.environment || 'staging' }}: ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }}"
-          text: |
+        uses: rtCamp/action-teams-helper@v1.2
+        env:
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          # Customize the card
+          MSG_TITLE: "Deploy to ${{ inputs.environment || 'staging' }}: ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }}"
+          MSG_BODY: |
             **Commit**: `${{ github.sha }}` by @${{ github.actor }}
             **Workflow**: [${{ github.workflow }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          # Card color: 32CD32 (LimeGreen) for success, DC143C (Crimson) for failure
+          THEME_COLOR: "${{ job.status == 'success' && '32CD32' || 'DC143C' }}"
