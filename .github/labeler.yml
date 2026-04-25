@@ -1,0 +1,20 @@
+# .github/labeler.yml
+# Updated for actions/labeler v5 compatibility
+
+frontend:
+  - any-glob-to-any-file: ['src/**/*', 'public/**/*', 'index.html', '*.css']
+
+backend:
+  - any-glob-to-any-file: ['api/**/*', 'server/**/*']
+
+infra:
+  - any-glob-to-any-file: ['.github/workflows/**/*', 'Dockerfile', 'docker-compose.yml', 'terraform/**/*']
+
+docs:
+  - any-glob-to-any-file: ['*.md', 'docs/**/*']
+
+tests:
+  - any-glob-to-any-file: ['**/*.test.jsx', '**/*.test.js', 'tests/**/*']
+
+ci:
+  - any-glob-to-any-file: ['.github/workflows/**/*', 'package.json', 'package-lock.json']

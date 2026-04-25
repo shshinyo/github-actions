@@ -48,19 +48,6 @@ export default function SlideTitle() {
           ))}
         </div>
 
-        <div className="fade-up delay-4" style={{ display:'flex', justifyContent:'center', gap:28 }}>
-          {[
-            { val:'14', lbl:'Slides' },
-            { val:'6', lbl:'Real Workflow Files' },
-            { val:'5+', lbl:'Live Demos' },
-          ].map(({ val, lbl }) => (
-            <div key={lbl} style={{ textAlign:'center' }}>
-              <div style={{ fontSize:28, fontWeight:800, color:'var(--accent-blue)', fontFamily:'var(--font-mono)' }}>{val}</div>
-              <div style={{ fontSize:11, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.5px' }}>{lbl}</div>
-            </div>
-          ))}
-        </div>
-
         <p className="fade-up delay-5" style={{ marginTop:20, fontSize:12, color:'var(--text-muted)' }}>Press → or arrow keys to navigate</p>
       </div>
     </div>
