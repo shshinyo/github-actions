@@ -218,13 +218,13 @@ jobs:
 
       - name: Deploy to S3 + CloudFront
         run: |
-          aws s3 sync dist/ s3://${{ vars.S3_BUCKET }} \
+          aws s3 sync dist/ s3://${{ secrets.S3_BUCKET }} \
             --delete \
             --cache-control "max-age=31536000,public,immutable" \
             --exclude "index.html"
 
           # index.html: no-cache so updates are instant
-          aws s3 cp dist/index.html s3://${{ vars.S3_BUCKET }}/index.html \
+          aws s3 cp dist/index.html s3://${{ secrets.S3_BUCKET }}/index.html \
             --cache-control "no-cache,no-store,must-revalidate"
 
           # Invalidate CloudFront cache
