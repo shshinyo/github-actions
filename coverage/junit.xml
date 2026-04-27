@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="2" failures="0" errors="0" time="0.929">
+    <testsuite name="src/App.test.jsx" timestamp="2026-05-14T10:38:07.051Z" hostname="E1619863" tests="2" failures="0" errors="0" skipped="0" time="0.001">
+        <testcase classname="src/App.test.jsx" name="Demo Test Suite &gt; should pass for the CI demo" time="0">
+        </testcase>
+        <testcase classname="src/App.test.jsx" name="Demo Test Suite &gt; should verify basic math" time="0">
+        </testcase>
+    </testsuite>
+</testsuites>
