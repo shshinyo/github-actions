@@ -8,7 +8,7 @@
 #   - Runs a diff summary via AI (GitHub Copilot)
 #   - Auto-merges Dependabot PRs for minor/patch updates
 #   - Stale PR detection and gentle nudging
-# ============================================================
+# ==============================================================
 name: 🤖 PR Automation
 
 on:
@@ -18,6 +18,7 @@ on:
     types: [submitted]
   schedule:
     - cron: '0 9 * * 1-5'    # Weekdays at 9am — stale check
+  workflow_dispatch:
 
 permissions:
   contents: write
